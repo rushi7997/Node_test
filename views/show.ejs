@@ -1,0 +1,23 @@
+<div>
+    <h2>Title ::
+        <%= article.title %>
+    </h2>
+    <h3>Author ::
+        <%= article.author %>
+    </h3>
+    <h4>Article::</h4>
+    <p>
+        <%= article.article %>
+    </p>
+</div>
+<a href="/articles/<%= article._id %>/edit">
+    <button>Edit</button>
+</a>
+
+<form action="/articles/<%= article._id %>?_method=DELETE" method="POST">
+    <button>DELETE</button>
+</form>
+
+<a href="/articles">
+    <button>Back</button>
+</a>

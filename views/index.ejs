@@ -1,5 +1,7 @@
 <h1> All The Articles...</h1>
-
+<a href="/articles/new">
+    <button>New</button>
+</a>
 <% article.forEach(function(x){ %>
     <div>
         <h2>Title :: <%= x.title %></h2>
@@ -7,4 +9,5 @@
         <h4>Article::</h4>
         <p><%= x.article %></p>
     </div>
+    <a href="/articles/<%= x._id %>">more...</a>
 <% }) %>

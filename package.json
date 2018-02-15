@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/rushi7997/Node_test/issues"
   },
-  "homepage": "https://github.com/rushi7997/Node_test#readme"
+  "homepage": "https://github.com/rushi7997/Node_test#readme",
+  "dependencies": {
+    "express": "^4.16.2"
+  }
 }

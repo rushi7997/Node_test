@@ -1,0 +1,10 @@
+<h1> All The Articles...</h1>
+
+<% article.forEach(function(x){ %>
+    <div>
+        <h2>Title :: <%= x.title %></h2>
+        <h3>Author :: <%= x.author %></h3>
+        <h4>Article::</h4>
+        <p><%= x.article %></p>
+    </div>
+<% }) %>

@@ -1,6 +1,6 @@
 var express     = require("express"),
     bodyParser  = require("body-parser"),
-    mongo       = require("mongoose"),
+    mongoose    = require("mongoose"),
     articles    = require('./article'),
     Comments    = require('./comments');
 
@@ -12,7 +12,7 @@ app.use(express.static("public"));
 // mongo.connect('mongodb://localhost/test_rest_api');
 
 var uristring = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/test_rest_api';
-mongo.connect(uristring,function(err, res){
+mongoose.connect(uristring,function(err, res){
     if(err){
         console.log('Error connecting to ' + uristring);
     }else{

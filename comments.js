@@ -1,6 +1,6 @@
-var mongo = require('mongoose');
+var mongoose = require('mongoose');
 
-var Comments = new mongo.Schema({
+var Comments = new mongoose.Schema({
     comment: String,
     comment_Author: String,
     created: {
@@ -9,4 +9,4 @@ var Comments = new mongo.Schema({
     }
 })
 
-module.exports = mongo.model("comment", Comments);
+module.exports = mongoose.model("comment", Comments);

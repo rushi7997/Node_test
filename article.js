@@ -1,11 +1,11 @@
-var mongo = require('mongoose');
+var mongoose = require('mongoose');
 
-var articles = new mongo.Schema({
+var articles = new mongoose.Schema({
     title: String,
     author: String,
     description: String,
     comments: [{
-        type: mongo.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "comment"
     }],
     created: {
@@ -13,4 +13,4 @@ var articles = new mongo.Schema({
         default: Date.now
     }
 })
-module.exports = mongo.model("article", articles);
+module.exports = mongoose.model("article", articles);

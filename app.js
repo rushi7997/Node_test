@@ -1,99 +1,147 @@
-var express = require('express'),
-    bodyParser = require('body-parser'),
-    mongoose = require('mongoose'),
-    methodOverride = require('method-override');
-    app = express();
+var express = require("express"),
+    bodyParser = require("body-parser"),
+    mongo = require("mongoose"),
+    methodOverride = require("method-override");
 
-mongoose.connect('mongodb://localhost/node_test');
-app.set('view engine','ejs');
-app.use(bodyParser.urlencoded({extended : true}));
-app.use(methodOverride('_method'));
+var app = express();
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(bodyParser.json());
+app.use(methodOverride("_method"));
+app.set("view engine", "ejs");
+app.use(express.static("public"));
 
-var testSchema = new mongoose.Schema({
-    title : String,
-    author : String,
-    article : String,
-    created : {
+//mongo.connect("mongodb://localhost/blog");
+mongo.connect(process.env.DB);
+
+var blogSchema = new mongo.Schema({
+    title: String,
+    author: String,
+    article: String,
+    comments: [{
+        type: mongo.Schema.Types.ObjectId,
+        ref: "comment"
+    }],
+    created: {
         type: Date,
         default: Date.now
     }
-});
-var Test = mongoose.model('Test', testSchema);
+})
+var blogs = mongo.model("blog", blogSchema);
 
-// Test.create({
-//     title: 'article 1',
-//     author : 'author 1',
-//     article : 'This is the article for author 1 named article 1'
-// });
+var commentsSchema = new mongo.Schema({
+    description: String,
+    name: String,
+    created: {
+        type: Date,
+        default: Date.now
+    }
+})
+var comments = mongo.model("comment", commentsSchema);
 
-app.get('/',function(req, res){
-    res.redirect('/articles');
-});
-//index route
-app.get('/articles', function (req, res) {
-    Test.find({}, function (err, article) {
+
+
+app.listen(process.env.PORT || 5000, process.env.IP, () => {
+    console.log("Start...");
+})
+
+
+
+app.get("/", (req, res) => {
+    blogs.find({}, (err, blogs) => {
         if (err) {
-            console.log("Error!!!");
-        } else {
-            res.render('index', { article: article });
+            console.log("Error Home : ")
+            return res.status(500).send("Internal server error");
         }
-    });
-});
-//new route
-app.get('/articles/new',function(req, res){
-    res.render('new');
-});
-//create route
-app.post('/articles',function(req, res){
-    Test.create(req.body.article,function(err,newArticle){
-        if(err){
-            console.log("ERROR");
-        }else{
-            res.redirect('/articles');
-        }
-    })  
-});
-//show route
-app.get('/articles/:id',function(req, res){
-    Test.findById(req.params.id,function(err, foundArticle){
-        if(err){
-            console.log('Error');
-        }else{
-            res.render('show',{article : foundArticle});
-        }
-    });
-});
-//edit route
-app.get('/articles/:id/edit',function(req, res){
-    Test.findById(req.params.id,function(err, foundArticle) {
-        if(err){
-            console.log('error');
-        }else{
-            res.render('edit',{article : foundArticle});
-        }        
-    });
-});
-//update route
-app.put('/articles/:id',function(req, res){
-    Test.findByIdAndUpdate(req.params.id,req.body.article,function(err, updatedArticle) {
-        if(err){
-            console.log('Error!');
-        } else{
-            res.redirect('/articles/'+req.params.id);
-        }       
-    });
-});
-//delete route
-app.delete('/articles/:id',function(req, res){
-    Test.findByIdAndRemove(req.params.id,function(err){
-        if (err) {
-            console.log('error');
-        } else {
-            res.redirect('/articles');
+        else {
+            res.status(200).json(blogs)
         }
     });
 });
 
-app.listen(3000,function(){
-    console.log('server is started at port 3000!!!');
-});
+app.get("/new", (req, res) => {
+    res.status(200).send("OK");
+})
+
+app.post("/new", (req, res) => {
+    blogs.create(req.body, (err, blog) => {
+        if (err) {
+            console.log("error in new post : ");
+            return res.status(500).send("Internal server error");
+        } else {
+            console.log(blog);
+            res.status(201).json(blog);
+
+        }
+    })
+})
+
+app.get("/show/:id", (req, res) => {
+    blogs.findById(req.params.id).populate("comments").exec((err, blogwithComments) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).send("Internal server error");
+        } else {
+            res.status(200).json({ blog: blogwithComments })
+        }
+    })
+})
+
+app.post("/show/:id/commentNew", (req, res) => {
+    comments.create(req.body, (err, comment) => {
+        if (err) {
+            return res.status(500).send("Internal server error");
+        } else {
+            blogs.findById(req.params.id, (err, blog) => {
+                console.log(blog);
+                blog.comments.push(comment);
+                blog.save((err, arrayComments) => {
+                    if (err) {
+                        console.log("err in post commentNew")
+                        return res.status(500).send("Internal server error");
+                    } else {
+                        console.log(arrayComments);
+                        res.status(201).json(blog);
+                    }
+                })
+            })
+        }
+    })
+})
+
+app.get("/show/:id/update", (req, res) => {
+    blogs.findById(req.params.id, (err, blog) => {
+        if (err) {
+            console.log("error in update get :");
+            return res.status(500).send("Internal server error");
+        } else {
+            res.status(200).send("OK").json(blog)
+        }
+    })
+})
+app.put("/show/:id/update", (req, res) => {
+    blogs.findByIdAndUpdate(req.params.id, req.body, (err, upBlog) => {
+        if (err)
+            return res.status(500).send("Internal server error");
+        else {
+            res.status(201).json({
+                response: 'a PUT request for EDITING blog',
+                blogId: req.params.id,
+                body: req.body,
+            });
+        }
+    })
+})
+
+app.delete("/show/:id", (req, res) => {
+    blogs.findByIdAndRemove(req.params.id, (err, r) => {
+        if (err) {
+            console.log("error in del :")
+            res.status(500).send("intrnal server erroer")
+        }
+        else {
+            res.status(204).send("NO CONTENT");
+        }
+    })
+})

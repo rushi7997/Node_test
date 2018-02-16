@@ -1,147 +1,118 @@
-var express = require("express"),
-    bodyParser = require("body-parser"),
-    mongo = require("mongoose"),
-    methodOverride = require("method-override");
+var express     = require("express"),
+    bodyParser  = require("body-parser"),
+    mongo       = require("mongoose"),
+    articles    = require('./article'),
+    Comments    = require('./comments');
 
 var app = express();
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-app.use(methodOverride("_method"));
-app.set("view engine", "ejs");
 app.use(express.static("public"));
 
-//mongo.connect("mongodb://localhost/blog");
-mongo.connect(process.env.DB);
+mongo.connect('mongodb://localhost/test_rest_api');
 
-var blogSchema = new mongo.Schema({
-    title: String,
-    author: String,
-    article: String,
-    comments: [{
-        type: mongo.Schema.Types.ObjectId,
-        ref: "comment"
-    }],
-    created: {
-        type: Date,
-        default: Date.now
-    }
-})
-var blogs = mongo.model("blog", blogSchema);
+port = process.env.PORT || 3000;
+app.listen(port, process.env.IP, () => {
+    console.log("The process is started at port no:: " + port);
+});
 
-var commentsSchema = new mongo.Schema({
-    description: String,
-    name: String,
-    created: {
-        type: Date,
-        default: Date.now
-    }
-})
-var comments = mongo.model("comment", commentsSchema);
-
-
-
-app.listen(process.env.PORT || 5000, process.env.IP, () => {
-    console.log("Start...");
-})
-
-
-
-app.get("/", (req, res) => {
-    blogs.find({}, (err, blogs) => {
+//index route
+app.get("/articles", (req, res) => {
+    articles.find({}, (err, article) => {
         if (err) {
             console.log("Error Home : ")
             return res.status(500).send("Internal server error");
         }
         else {
-            res.status(200).json(blogs)
+            res.status(200).json(article)
         }
     });
 });
-
-app.get("/new", (req, res) => {
+//new route
+app.get("/articles/new", (req, res) => {
     res.status(200).send("OK");
+    // res.send('new');
 })
-
-app.post("/new", (req, res) => {
-    blogs.create(req.body, (err, blog) => {
+//create route
+app.post("/articles/", (req, res) => {
+    articles.create(req.body, (err, article) => {
         if (err) {
             console.log("error in new post : ");
             return res.status(500).send("Internal server error");
         } else {
-            console.log(blog);
-            res.status(201).json(blog);
-
+            console.log(article);
+            res.status(201).json(article);
         }
     })
 })
-
-app.get("/show/:id", (req, res) => {
-    blogs.findById(req.params.id).populate("comments").exec((err, blogwithComments) => {
+//show route
+app.get("/articles/:id", (req, res) => {
+    articles.findById(req.params.id).populate("comments").exec((err, article) => {
         if (err) {
             console.log(err);
             return res.status(500).send("Internal server error");
         } else {
-            res.status(200).json({ blog: blogwithComments })
+            res.status(200).json({ article: article }) //see
         }
     })
 })
-
-app.post("/show/:id/commentNew", (req, res) => {
-    comments.create(req.body, (err, comment) => {
+//new comment route
+app.post("/articles/:id/newComment", (req, res) => {
+    Comments.create(req.body, (err, comment) => {
         if (err) {
             return res.status(500).send("Internal server error");
         } else {
-            blogs.findById(req.params.id, (err, blog) => {
-                console.log(blog);
-                blog.comments.push(comment);
-                blog.save((err, arrayComments) => {
+            articles.findById(req.params.id, (err, article) => {
+                console.log(article);
+                article.comments.push(comment);
+                article.save((err, new_comments) => {
                     if (err) {
                         console.log("err in post commentNew")
                         return res.status(500).send("Internal server error");
                     } else {
-                        console.log(arrayComments);
-                        res.status(201).json(blog);
+                        console.log(new_comments);
+                        res.status(201).json(article);
                     }
                 })
             })
         }
     })
 })
-
-app.get("/show/:id/update", (req, res) => {
-    blogs.findById(req.params.id, (err, blog) => {
+//edit route
+app.get("/articles/:id/edit", (req, res) => {
+    articles.findById(req.params.id, (err, article) => {
         if (err) {
             console.log("error in update get :");
             return res.status(500).send("Internal server error");
         } else {
-            res.status(200).send("OK").json(blog)
+            res.status(200).send("OK").json(article)
         }
     })
 })
-app.put("/show/:id/update", (req, res) => {
-    blogs.findByIdAndUpdate(req.params.id, req.body, (err, upBlog) => {
+
+//update route
+app.put("/articles/:id", (req, res) => {
+    articles.findByIdAndUpdate(req.params.id, req.body, (err, updated_article) => {
         if (err)
             return res.status(500).send("Internal server error");
         else {
             res.status(201).json({
-                response: 'a PUT request for EDITING blog',
-                blogId: req.params.id,
+                response: 'a PUT request for EDITING article',
+                articleId: req.params.id,
                 body: req.body,
             });
         }
     })
 })
-
-app.delete("/show/:id", (req, res) => {
-    blogs.findByIdAndRemove(req.params.id, (err, r) => {
+//delete route
+app.delete("/articles/:id", (req, res) => {
+    articles.findByIdAndRemove(req.params.id, (err, r) => {
         if (err) {
             console.log("error in del :")
             res.status(500).send("intrnal server erroer")
         }
         else {
-            res.status(204).send("NO CONTENT");
+            res.status(204).json('Successfully Deleted');
         }
     })
 })

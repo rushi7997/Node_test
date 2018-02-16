@@ -9,7 +9,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-mongo.connect('mongodb://localhost/test_rest_api');
+// mongo.connect('mongodb://localhost/test_rest_api');
+mongo.connect(process.env.DB);
 
 port = process.env.PORT || 3000;
 app.listen(port, process.env.IP, () => {

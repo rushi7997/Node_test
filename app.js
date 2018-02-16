@@ -17,7 +17,7 @@ app.listen(port, process.env.IP, () => {
 });
 
 //index route
-app.get("/articles", (req, res) => {
+app.get("/", (req, res) => {
     articles.find({}, (err, article) => {
         if (err) {
             console.log("Error Home : ")

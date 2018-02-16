@@ -9,17 +9,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// mongo.connect('mongodb://localhost/test_rest_api');
-
-var uristring = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/test_rest_api';
-mongoose.connect(uristring,function(err, res){
+// mongoose.connect('mongodb://localhost/test_rest_api');
+mongoose.connect('mongodb://rushi:password@ds239638.mlab.com:39638/test_node_rest',function(err, res){
     if(err){
-        console.log('Error connecting to ' + uristring);
+        console.log('Error connecting To The Data Base!!!');
     }else{
-        console.log('successfully connected to ' + uristring);
+        console.log('Successfully connected to the data base');
     }
 });
-
 
 port = process.env.PORT || 3000;
 app.listen(port, process.env.IP, () => {

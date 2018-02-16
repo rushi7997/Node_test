@@ -10,7 +10,16 @@ app.use(bodyParser.json());
 app.use(express.static("public"));
 
 // mongo.connect('mongodb://localhost/test_rest_api');
-mongo.connect(process.env.DB);
+
+var uristring = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/test_rest_api';
+mongo.connect(uristring,function(err, res){
+    if(err){
+        console.log('Error connecting to ' + uristring);
+    }else{
+        console.log('successfully connected to ' + uristring);
+    }
+});
+
 
 port = process.env.PORT || 3000;
 app.listen(port, process.env.IP, () => {

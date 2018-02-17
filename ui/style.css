@@ -1,0 +1,28 @@
+body {
+    font-family: sans-serif;
+    margin-top: 75px;
+}
+
+.center {
+    text-align: center;
+}
+
+.text-big {
+    font-size: 100%;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.img-medium {
+    height: 200px;
+}
+.container{
+    font-family: sans-serif;
+    margin: 0 auto;
+    max-width: 800px;
+    color: #656464;
+    padding-left: 20px;
+    padding-right: 20px;
+}

@@ -4,6 +4,10 @@ var express = require('express'),
     mongoose = require('mongoose'),
     methodOverride = require('method-override');
 var app = express();
+var crypto = require('crypto');
+var session = require('express-session');
+var Pool = require('pg').Pool;
+var path = require('path');
 =======
 var express     = require("express"),
     bodyParser  = require("body-parser"),
@@ -16,6 +20,10 @@ var app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(express.static("public"));
+app.use(session({
+    secret:'someRandomSecretValue',
+    cookie:{maxAge: 1000 * 60 * 60 * 24 * 30}
+}));
 
 // mongoose.connect('mongodb://localhost/test_rest_api');
 mongoose.connect('mongodb://rushi:password@ds239638.mlab.com:39638/test_node_rest',function(err, res){
@@ -43,6 +51,68 @@ app.get("/", (req, res) => {
         }
     });
 });
+
+app.get('/home-page', function (req, res) {
+  res.sendFile(path.join(__dirname, 'ui', 'index.html'));
+});
+
+function hash(input,salt){
+    var hashed = crypto.pbkdf2Sync(input, 'salt', 100000, 512, 'sha512');
+    return ["pbkdf2","10000",salt,hashed.toString('hex')].join('$');
+}
+
+app.post('/create-user', function (req, res) {
+    
+    var username = req.body.username;
+    var password = req.body.password;
+    var salt = crypto.randomBytes(128).toString('hex');
+    var dbString = hash(password,salt);
+    // pool.query('INSERT INTO "user" (username,password) VALUES ($1,$2)',[username,dbString],function(err,result){
+    //   if(err){
+    //         res.status(500).send(err,toString());
+    //     } else {
+    //         res.send('User created successfully'+username);
+    //     }
+    // }); Do required changes in mongoDB
+});
+
+app.post('/login',function(req,res){
+    var username = req.body.username;
+    var password = req.body.password;
+    // pool.query('SELECT * FROM "user" WHERE username = $1',[username],function(err,result){
+    //   if(err){
+    //         res.status(500).send(err.toString());
+    //     } else {
+    //         if(result.rows.length === 0){
+    //             res.send(403).send('username/password invalid');
+    //         }else{
+    //             var dbString = result.rows[0].password;
+    //             var salt = dbString.split('$')[2];
+    //             var hashedPassword = hash(password,salt);
+    //             if(hashedPassword == dbString){
+    //                 req.session.auth = {userId: result.rows[0].id};
+    //                 res.send('Creditials correct');    
+    //             }else{
+    //                 res.send(403).send('username/password invalid');
+    //             }
+    //         }
+    //     }
+    // }); do Changes in Mongo DB and Database
+});
+
+app.get('/check-login',function(req,res){
+    if(req.session && req.session.auth && req.session.auth.userId){
+        res.send('you are logged in '+ req.session.auth.userId.toString());
+    }else{
+        res.send('you are not logged in ');
+    }
+});
+
+app.get('/logout',function(req,res){
+    delete req.session.auth;
+    res.send('You are Logout');
+});
+
 //new route
 app.get("/articles/new", (req, res) => {
     res.status(200).send("OK");

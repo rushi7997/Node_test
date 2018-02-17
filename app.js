@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 var express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
@@ -8,14 +7,8 @@ var crypto = require('crypto');
 var session = require('express-session');
 var Pool = require('pg').Pool;
 var path = require('path');
-=======
-var express     = require("express"),
-    bodyParser  = require("body-parser"),
-    mongoose    = require("mongoose"),
-    articles    = require('./article'),
-    Comments    = require('./comments');
->>>>>>> 215440bd6c9c4ad43b861c408137a1e04d11f3d8
-
+var articles = require('./article'),
+    Comments = require('./comments');
 var app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());

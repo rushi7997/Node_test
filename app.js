@@ -1,99 +1,133 @@
+<<<<<<< HEAD
 var express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
     methodOverride = require('method-override');
 var app = express();
+=======
+var express     = require("express"),
+    bodyParser  = require("body-parser"),
+    mongoose    = require("mongoose"),
+    articles    = require('./article'),
+    Comments    = require('./comments');
+>>>>>>> 215440bd6c9c4ad43b861c408137a1e04d11f3d8
 
-mongoose.connect('mongodb://localhost/node_test');
-app.set('view engine','ejs');
-app.use(bodyParser.urlencoded({extended : true}));
-app.use(methodOverride('_method'));
+var app = express();
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+app.use(express.static("public"));
 
-var testSchema = new mongoose.Schema({
-    title : String,
-    author : String,
-    article : String,
-    created : {
-        type: Date,
-        default: Date.now
+// mongoose.connect('mongodb://localhost/test_rest_api');
+mongoose.connect('mongodb://rushi:password@ds239638.mlab.com:39638/test_node_rest',function(err, res){
+    if(err){
+        console.log('Error connecting To The Data Base!!!');
+    }else{
+        console.log('Successfully connected to the data base');
     }
 });
-var Test = mongoose.model('Test', testSchema);
 
-// Test.create({
-//     title: 'article 1',
-//     author : 'author 1',
-//     article : 'This is the article for author 1 named article 1'
-// });
-
-app.get('/',function(req, res){
-    res.redirect('/articles');
+port = process.env.PORT || 3000;
+app.listen(port, process.env.IP, () => {
+    console.log("The process is started at port no:: " + port);
 });
+
 //index route
-app.get('/articles', function (req, res) {
-    Test.find({}, function (err, article) {
+app.get("/", (req, res) => {
+    articles.find({}, (err, article) => {
         if (err) {
-            console.log("Error!!!");
-        } else {
-            res.render('index', { article: article });
+            console.log("Error Home : ")
+            return res.status(500).send("Error Performing Index Route!");
+        }
+        else {
+            res.status(200).json(article)
         }
     });
 });
 //new route
-app.get('/articles/new',function(req, res){
-    res.render('new');
-});
+app.get("/articles/new", (req, res) => {
+    res.status(200).send("OK");
+    // res.send('new');
+})
 //create route
-app.post('/articles',function(req, res){
-    Test.create(req.body.article,function(err,newArticle){
-        if(err){
-            console.log("ERROR");
-        }else{
-            res.redirect('/articles');
-        }
-    })  
-});
-//show route
-app.get('/articles/:id',function(req, res){
-    Test.findById(req.params.id,function(err, foundArticle){
-        if(err){
-            console.log('Error');
-        }else{
-            res.render('show',{article : foundArticle});
-        }
-    });
-});
-//edit route
-app.get('/articles/:id/edit',function(req, res){
-    Test.findById(req.params.id,function(err, foundArticle) {
-        if(err){
-            console.log('error');
-        }else{
-            res.render('edit',{article : foundArticle});
-        }        
-    });
-});
-//update route
-app.put('/articles/:id',function(req, res){
-    Test.findByIdAndUpdate(req.params.id,req.body.article,function(err, updatedArticle) {
-        if(err){
-            console.log('Error!');
-        } else{
-            res.redirect('/articles/'+req.params.id);
-        }       
-    });
-});
-//delete route
-app.delete('/articles/:id',function(req, res){
-    Test.findByIdAndRemove(req.params.id,function(err){
+app.post("/articles/", (req, res) => {
+    articles.create(req.body, (err, article) => {
         if (err) {
-            console.log('error');
+            console.log("error in new post : ");
+            return res.status(500).send("Error Performing Create Route!");
         } else {
-            res.redirect('/articles');
+            console.log(article);
+            res.status(201).json(article);
         }
-    });
-});
+    })
+})
+//show route
+app.get("/articles/:id", (req, res) => {
+    articles.findById(req.params.id).populate("comments").exec((err, article) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).send("Error Performing show Route!");
+        } else {
+            res.status(200).json({ article: article }) //see
+        }
+    })
+})
+//new comment route
+app.post("/articles/:id/newComment", (req, res) => {
+    Comments.create(req.body, (err, comment) => {
+        if (err) {
+            return res.status(500).send("Error Performing new comment 1 Route!");
+        } else {
+            articles.findById(req.params.id, (err, article) => {
+                console.log(article);
+                article.comments.push(comment);
+                article.save((err, new_comments) => {
+                    if (err) {
+                        console.log("err in post commentNew")
+                        return res.status(500).send("Error Performing new comment 2 Route!");
+                    } else {
+                        console.log(new_comments);
+                        res.status(201).json(article);
+                    }
+                })
+            })
+        }
+    })
+})
+//edit route
+app.get("/articles/:id/edit", (req, res) => {
+    articles.findById(req.params.id, (err, article) => {
+        if (err) {
+            console.log("error in update get :");
+            return res.status(500).send("Error Performing edit Route!");
+        } else {
+            res.status(200).send("OK").json(article)
+        }
+    })
+})
 
-app.listen(3000,function(){
-    console.log('server is started at port 3000!!!');
-});
+//update route
+app.put("/articles/:id", (req, res) => {
+    articles.findByIdAndUpdate(req.params.id, req.body, (err, updated_article) => {
+        if (err)
+            return res.status(500).send("Error Performing update Route!");
+        else {
+            res.status(201).json({
+                response: 'a PUT request for EDITING article',
+                articleId: req.params.id,
+                body: req.body,
+            });
+        }
+    })
+})
+//delete route
+app.delete("/articles/:id", (req, res) => {
+    articles.findByIdAndRemove(req.params.id, (err, r) => {
+        if (err) {
+            console.log("error in del :")
+            res.status(500).send("Error Performing delete Route!")
+        }
+        else {
+            res.status(204).json('Successfully Deleted');
+        }
+    })
+})

@@ -1,9 +1,0 @@
-<form action="/articles/<%= article._id %>?_method=PUT" method="POST">
-    <input type="text" name="article[title]" value="<%= article.title %>">
-    <input type="text" name="article[author]" value="<%= article.author %>">
-    <input type="text" name="article[article]" value="<%= article.article %>">
-    <button>Submit</button>
-</form>
-<a href="/articles/<%= article._id %>">
-    <button>Back</button>
-</a>

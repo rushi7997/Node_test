@@ -2,7 +2,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
     methodOverride = require('method-override');
-    app = express();
+var app = express();
 
 mongoose.connect('mongodb://localhost/node_test');
 app.set('view engine','ejs');
